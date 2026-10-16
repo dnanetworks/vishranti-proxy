@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vishranti Bhuvan Player</title>
+    <style>
+        body { margin: 0; padding: 0; background: #000; }
+        #player { width: 100vw; height: 100vh; }
+    </style>
+</head>
+<body>
+    <div id="player"></div>
+
+    <script>
+        var player;
+        var isReady = false;
+        var pendingVideoId = null;
+
+        // Load the IFrame Player API
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        // Called automatically when the API is ready
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                videoId: '',
+                playerVars: {
+                    'playsinline': 1,
+                    'autoplay': 1,
+                    'controls': 1,
+                    'rel': 0,
+                    'enablejsapi': 1,
+                    'origin': 'https://YOUR-USERNAME.github.io'
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange,
+                    'onError': onPlayerError
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            isReady = true;
+            if (pendingVideoId) {
+                player.loadVideoById(pendingVideoId);
+                pendingVideoId = null;
+            }
+            // Notify MAUI that player is ready
+            window.HybridWebView?.SendRawMessage(JSON.stringify({ type: 'ready' }));
+        }
+
+        function onPlayerStateChange(event) {
+            // Notify MAUI about playback state
+            window.HybridWebView?.SendRawMessage(JSON.stringify({ 
+                type: 'stateChange', 
+                state: event.data 
+            }));
+        }
+
+        function onPlayerError(event) {
+            window.HybridWebView?.SendRawMessage(JSON.stringify({ 
+                type: 'error', 
+                code: event.data 
+            }));
+        }
+
+        // Called from C# via InvokeJavaScriptAsync
+        function loadVideo(videoId) {
+            if (isReady && player) {
+                player.loadVideoById(videoId);
+            } else {
+                pendingVideoId = videoId;
+            }
+        }
+
+        function playVideo() {
+            if (player) player.playVideo();
+        }
+
+        function pauseVideo() {
+            if (player) player.pauseVideo();
+        }
+
+        function stopVideo() {
+            if (player) player.stopVideo();
+        }
+    </script>
+</body>
+</html>
