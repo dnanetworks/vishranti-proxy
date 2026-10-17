@@ -25,7 +25,8 @@
         
         // 1. Read the video ID from the URL (e.g., ?v=1xiApA0vagJXb4pn)
         var urlParams = new URLSearchParams(window.location.search);
-        var initialVideoId = urlParams.get('v') || '';
+        //var initialVideoId = urlParams.get('v') || '';
+        var initialVideoId = urlParams.get('v') || 'UHE5-qoVu28'; // Fallback video
 
         // 2. Load the YouTube IFrame API script
         var tag = document.createElement('script');
